@@ -1,8 +1,7 @@
 AwayMail-Irssi-Plugin
 ====================
 
-Sends a email(s) via SMTP with optional SSL to an email address when someone types your name or sends you a private msg.
-Hint: use with screen_away.pl.
+Sends email notification(s) when someone types your name or sends you a private msg. Hint: use with screen_away.pl.
 
 Installation
 ------------
