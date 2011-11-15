@@ -5,7 +5,7 @@ use Irssi qw(
 	settings_get_bool
 	settings_get_str
 );
-$VERSION = '1.00';
+$VERSION = '1.01';
 %IRSSI = (
     authors     => 'Alan Hamlett',
     contact     => 'alan.hamlett@gmail.com',
@@ -70,7 +70,9 @@ sub send_email {
 					Irssi::settings_set_str("awaymail_from", $to);
 				}
 				
-				$body		=~ s/[^\w\s\.\!\@#\$\%^&\*\(\)\-\+=,<>]//g; # only allow these characters
+				$subject	= filter_string($subject);
+				$header		= filter_string($header);
+				$body		= filter_string($body);
 				my $content		= "$header$body";
 				
 				my $smtps = Net::SMTP::SSL->new($server, Port => $port);
@@ -103,6 +105,12 @@ sub send_email {
 	}
 }
 
+sub filter_string {
+	my $string	= shift;
+	$string		=~ s/[^\w\s\.\!\@#\$\%^&\*\(\)\[\]\{\}\-\+=,<>:\?\/]//g; # only allow these characters
+	return $string;
+}
+
 sub reset_time {
 	$time	= 0;
 }
@@ -121,9 +129,9 @@ Irssi::settings_add_str('awaymail', 'awaymail_pass', "");
 Irssi::settings_add_bool('awaymail', 'awaymail_alwaysnotify', 0);
 Irssi::settings_add_str('awaymail', 'awaymail_delaymins', "10");
 Irssi::signal_add_last('print text', 'handle_printtext');
-Irssi::signal_add('message private', 'handle_privatemsg');
-Irssi::signal_add('send command', 'reset_time');
-Irssi::signal_add('away mode changed', 'reset_time');
+Irssi::signal_add_last('message private', 'handle_privatemsg');
+Irssi::signal_add_last('send command', 'reset_time');
+Irssi::signal_add_last('away mode changed', 'reset_time');
 
 Irssi::print("*****\n* $IRSSI{name} $VERSION loaded.");
 Irssi::print("*  Use these commands to configure:");
