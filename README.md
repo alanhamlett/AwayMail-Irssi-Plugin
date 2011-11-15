@@ -8,7 +8,7 @@ Installation
 
 Put the plugin file in your scripts directory.
 
-    git clone git://github.com/alanhamlett/jQuery-PicasaGallery.git
+    git clone git://github.com/alanhamlett/AwayMail-Irssi-Plugin.git
     cp AwayMail-Irssi-Plugin/awaymail.pl ~/.irssi/scripts/
     ln -s ~/.irssi/scripts/awaymail.pl ~/.irssi/scripts/autorun/awaymail.pl
 
@@ -33,7 +33,7 @@ The next time someone says your nick or sends you a private message, their messa
 Download
 --------
 
-<https://github.com/alanhamlett/jQuery-PicasaGallery/tarball/master>
+<https://github.com/alanhamlett/AwayMail-Irssi-Plugin/tarball/master>
 
 Project Page
 ------------
