@@ -5,33 +5,46 @@ use Irssi qw(
 	settings_get_bool
 	settings_get_str
 );
-$VERSION = '1.01';
+$VERSION = '1.02';
 %IRSSI = (
     authors     => 'Alan Hamlett',
     contact     => 'alan.hamlett@gmail.com',
-	url         => "http://uan.no-ip.com:8080/",
+    url         => 'http://ahamlett.com/',
     name        => 'Away Mail',
-    description => 'Sends an email via SMTP with SSL to an email address when someone types your name or sends you a private msg.',
-    license     => 'Public Domain',
+    description => 'Sends an email via SMTP with optional SSL to an email address when someone types your name or sends you a private msg.',
+    license     => 'GNU General Public License',
+    changed     => 'Thu Jun 17 11:35:15 CDT 2010',
 );
 
-unless(eval "use Net::SMTP::SSL; 1") {
-	Irssi::print("***** Away Mail: Perl module Net::SMTP::SSL must be installed");
-	Irssi::print("***** Away Mail: Install it with CPAN and re-load this script");
-	return;
-}
-unless(eval "use MIME::Base64; 1") {
-	Irssi::print("***** Away Mail: Perl module MIME::Base64 must be installed");
-	Irssi::print("***** Away Mail: Install it with CPAN and re-load this script");
-	return;
-}
-unless(eval "use Authen::SASL; 1") {
-	Irssi::print("***** Away Mail: Perl module Authen::SASL must be installed");
-	Irssi::print("***** Away Mail: Install it with CPAN and re-load this script");
-	return;
-}
-
 my $time;
+
+sub check_required_modules {
+	if(settings_get_bool('awaymail_ssl')) { # SSL is turned on so check for required modules
+		unless(eval "use Net::SMTP::SSL; 1") {
+			Irssi::print("***** Away Mail: Perl module Net::SMTP::SSL must be installed");
+			Irssi::print("***** Away Mail: Install it with CPAN or /SET awaymail_ssl OFF and re-load this script");
+			return 0;
+		}
+		unless(eval "use MIME::Base64; 1") {
+			Irssi::print("***** Away Mail: Perl module MIME::Base64 must be installed");
+			Irssi::print("***** Away Mail: Install it with CPAN or /SET awaymail_ssl OFF and re-load this script");
+			return 0;
+		}
+		unless(eval "use Authen::SASL; 1") {
+			Irssi::print("***** Away Mail: Perl module Authen::SASL must be installed");
+			Irssi::print("***** Away Mail: Install it with CPAN or /SET awaymail_ssl OFF and re-load this script");
+			return 0;
+		}
+	}
+	else {
+		unless(eval "use Net::SMTP; 1") {
+			Irssi::print("***** Away Mail: Perl module Net::SMTP must be installed");
+			Irssi::print("***** Away Mail: Install it with CPAN and re-load this script");
+			return 0;
+		}
+	}
+	return 1;
+}
 
 sub handle_printtext {
 	my($dest, $text, $stripped)	= @_;
@@ -63,9 +76,9 @@ sub send_email {
 			my $port		= settings_get_str('awaymail_port');
 			my $username	= settings_get_str('awaymail_user');
 			my $password	= settings_get_str('awaymail_pass');
-			if(valid_email($to) && $server && $port =~ /^\d+$/ && $username && $password) {
+			if($to && $server && $port =~ /^\d+$/ && $username && $password) {
 				$time	= time;
-				if(!valid_email($from)) {
+				if(!$from) {
 					$from		= $to;
 					Irssi::settings_set_str("awaymail_from", $to);
 				}
@@ -73,25 +86,29 @@ sub send_email {
 				$subject	= filter_string($subject);
 				$header		= filter_string($header);
 				$body		= filter_string($body);
-				my $content		= "$header$body";
 				
-				my $smtps = Net::SMTP::SSL->new($server, Port => $port);
-				$smtps->auth($username, $password);
-				$smtps->mail($from);
-				$smtps->to($to);
-				$smtps->data();
-				$smtps->datasend("To: $to\r\nFrom: $from\r\nSubject: $subject\r\n\r\n$content\r\n");
-				$smtps->dataend();
-				if($smtps->ok()) {
-					Irssi::print("***** Away Mail: Sent notification email to $to");
+				my $smtp	= settings_get_bool('awaymail_ssl') ? Net::SMTP::SSL->new($server, Port => $port) : Net::SMTP->new($server, Port => $port);
+				if($smtp) {
+					$smtp->auth($username, $password);
+					$smtp->mail($from);
+					$smtp->to($to);
+					$smtp->data();
+					$smtp->datasend("To: $to\r\nFrom: $from\r\nSubject: $subject\r\n\r\n$header$body\r\n");
+					$smtp->dataend();
+					if($smtp->ok()) {
+						Irssi::print("***** Away Mail: Sent notification email to $to");
+					}
+					else {
+						Irssi::print("***** Away Mail: Failed to send the email");
+					}
+					$smtp->quit();
 				}
 				else {
-					Irssi::print("***** Away Mail: Failed to send the email");
+					Irssi::print("***** Away Mail: Could not connect to SMTP server");
 				}
-				$smtps->quit();
 			}
 			else {
-				Irssi::print("***** Away Mail: Please configure the script with a valid email address, smtp server, port number, username, and password");
+				Irssi::print("***** Away Mail: Please configure the script with an email address, smtp server, port number, username, and password");
 				Irssi::print("*  Use these commands to configure:");
 				Irssi::print("*  /set awaymail_to <email>");
 				Irssi::print("*  /set awaymail_server <server>");
@@ -115,11 +132,6 @@ sub reset_time {
 	$time	= 0;
 }
 
-sub valid_email {
-	my $email	= shift;
-	return $email =~ m/[\w\.\%+\-]+\@[\w\.\-]+\.[a-zA-Z]{2,4}/;
-}
-
 Irssi::settings_add_str('awaymail', 'awaymail_to', "");
 Irssi::settings_add_str('awaymail', 'awaymail_from', "");
 Irssi::settings_add_str('awaymail', 'awaymail_server', "");
@@ -128,10 +140,13 @@ Irssi::settings_add_str('awaymail', 'awaymail_user', "");
 Irssi::settings_add_str('awaymail', 'awaymail_pass', "");
 Irssi::settings_add_bool('awaymail', 'awaymail_alwaysnotify', 0);
 Irssi::settings_add_str('awaymail', 'awaymail_delaymins', "10");
+Irssi::settings_add_bool('awaymail', 'awaymail_ssl', 1);
 Irssi::signal_add_last('print text', 'handle_printtext');
 Irssi::signal_add_last('message private', 'handle_privatemsg');
 Irssi::signal_add_last('send command', 'reset_time');
 Irssi::signal_add_last('away mode changed', 'reset_time');
+
+return unless check_required_modules();
 
 Irssi::print("*****\n* $IRSSI{name} $VERSION loaded.");
 Irssi::print("*  Use these commands to configure:");
@@ -142,3 +157,4 @@ Irssi::print("*  /set awaymail_user <username>");
 Irssi::print("*  /set awaymail_pass <password>");
 Irssi::print("*  /set awaymail_alwaysnotify <YES|NO>");
 Irssi::print("*  /set awaymail_delaymins <minutes between emails>");
+Irssi::print("*  /set awaymail_ssl <YES|NO>");
