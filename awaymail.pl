@@ -36,7 +36,7 @@ our %IRSSI = (
     name        => 'Away Mail',
     description => 'Sends email notification(s) when someone types your name or sends you a private msg. Hint: use with screen_away.pl',
     license     => 'MIT License',
-    changed     => 'Wed Nov  9 16:50:32 CST 2011',
+    changed     => 'Sat Nov 26 23:27:03 PST 2011',
 );
 
 my $help = "
