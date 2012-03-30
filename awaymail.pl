@@ -28,7 +28,7 @@ use Irssi qw(
     settings_set_bool
     settings_set_str
 );
-our $VERSION = '3.01';
+our $VERSION = '3.02';
 our %IRSSI = (
     authors     => 'Alan Hamlett',
     contact     => 'alan.hamlett@gmail.com',
