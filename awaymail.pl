@@ -84,25 +84,25 @@ Irssi::theme_register([
 ]);
 
 sub check_required_modules {
-    if(settings_get_bool('awaymail_ssl')) { # SSL is turned on so check for required modules
-        unless(eval "use Net::SMTP::SSL; 1") {
+    if ( settings_get_bool('awaymail_ssl') ) { # SSL is turned on so check for required modules
+        unless ( eval "use Net::SMTP::SSL; 1" ) {
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Perl module Net::SMTP::SSL must be installed");
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Install it with CPAN or /SET awaymail_ssl OFF and re-load this script");
             return 0;
         }
-        unless(eval "use MIME::Base64; 1") {
+        unless ( eval "use MIME::Base64; 1" ) {
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Perl module MIME::Base64 must be installed");
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Install it with CPAN or /SET awaymail_ssl OFF and re-load this script");
             return 0;
         }
-        unless(eval "use Authen::SASL; 1") {
+        unless ( eval "use Authen::SASL; 1" ) {
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Perl module Authen::SASL must be installed");
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Install it with CPAN or /SET awaymail_ssl OFF and re-load this script");
             return 0;
         }
     }
     else {
-        unless(eval "use Net::SMTP; 1") {
+        unless ( eval "use Net::SMTP; 1" ) {
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Perl module Net::SMTP must be installed");
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Install it with CPAN and re-load this script");
             return 0;
@@ -128,7 +128,7 @@ sub handle_print_text {
     # make sure our nick is surrounded by non-nick characters aka. someone really said our nick
     my $found_me = 0;
     my $pos = 0;
-    while( length($stripped) > $pos and ($pos = index($stripped, $me, $pos)) and $pos >= 0 ) {
+    while ( length($stripped) > $pos and ($pos = index($stripped, $me, $pos)) and $pos >= 0 ) {
         
         # Check for nick wrapped in non-nick chars a-z, A-Z, 0-9, [, ], \, `, _, ^, {, |, }, -
         unless( substr($stripped, $pos-1, 1) =~ /[a-zA-Z0-9[\]\\`_^{}|-]/ or substr($stripped, $pos+length($me), 1) =~ m/[a-zA-Z0-9[\]\\`_^{}|-]/ ) {
@@ -154,16 +154,16 @@ sub handle_print_text {
 
     # filter newlines because they can interfere with SMTP
     my $footer = "";
-    if($nick =~ s/[\r\n]//g) {
+    if ( $nick =~ s/[\r\n]//g ) {
         $footer .= "\n( Newlines filtered from user's nick. Only UTF-8 supported. )";
     }
-    if($stripped =~ s/[\r\n]//g) {
+    if ( $stripped =~ s/[\r\n]//g ) {
         $footer .= "\n( Newlines filtered from user's nick. Only UTF-8 supported. )";
     }
-    if($serv =~ s/[\r\n]//g) {
+    if ( $serv =~ s/[\r\n]//g ) {
         $footer .= "\n( Newlines filtered from server name. Only UTF-8 supported. )";
     }
-    if($chan =~ s/[\r\n]//g) {
+    if ( $chan =~ s/[\r\n]//g ) {
         $footer .= "\n( Newlines filtered from channel name. Only UTF-8 supported. )";
     }
 
@@ -189,13 +189,13 @@ sub handle_message_private {
 
     # filter newlines because they can interfere with SMTP
     my $footer = "";
-    if($nick =~ s/[\r\n]//g) {
+    if ( $nick =~ s/[\r\n]//g ) {
         $footer .= "\n( Newlines filtered from user's nick. Only UTF-8 supported. )";
     }
-    if($msg =~ s/[\r\n]//g) {
+    if ( $msg =~ s/[\r\n]//g ) {
         $footer .= "\n( Newlines filtered from user's nick. Only UTF-8 supported. )";
     }
-    if($serv =~ s/[\r\n]//g) {
+    if ( $serv =~ s/[\r\n]//g ) {
         $footer .= "\n( Newlines filtered from server name. Only UTF-8 supported. )";
     }
 
@@ -238,7 +238,7 @@ sub check_buffer {
     $delay =~ s/\D//g;
     $delay = 10 unless $delay > 0;
     my $last_sent = settings_get_str('awaymail_last_sent_time');
-    if($last_sent + $delay * 60 > time) {
+    if ( $last_sent + $delay * 60 > time ) {
         $timeout = Irssi::timeout_add(($last_sent-time+$delay*60)*1000, 'check_buffer', '');
         return;
     }
@@ -265,14 +265,14 @@ sub send_email {
     my $username = settings_get_str('awaymail_user');
     my $password = settings_get_str('awaymail_pass');
     
-    unless($to and $server and $port =~ /^\d+$/ and $username and $password) {
+    unless ( $to and $server and $port =~ /^\d+$/ and $username and $password ) {
         Irssi::print($help, MSGLEVEL_CLIENTCRAP);
         return;
     }
     
     # connect to smtp server
     my $smtp = settings_get_bool('awaymail_ssl') ? Net::SMTP::SSL->new($server, Port => $port) : Net::SMTP->new($server, Port => $port);
-    unless($smtp) {
+    unless ( $smtp ) {
         Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Could not connect to SMTP server");
         return;
     }
@@ -285,7 +285,7 @@ sub send_email {
     $smtp->datasend("To: $to\r\nFrom: $username\r\nSubject: $subject\r\n\r\n$body\r\n");
     $smtp->dataend();
     $smtp->quit();
-    unless($smtp->ok()) {
+    unless ( $smtp->ok() ) {
         Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Failed to send the email");
         return;
     }
@@ -324,7 +324,7 @@ Irssi::signal_add_last('away mode changed', 'reset_time');
 
 # Overwrite the help command for awaymail
 Irssi::command_bind('help', sub {
-    if(lc $_[0] eq 'awaymail') {
+    if ( lc $_[0] eq 'awaymail' ) {
         Irssi::print($help, MSGLEVEL_CLIENTCRAP);
         Irssi::signal_stop;
     }
