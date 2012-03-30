@@ -112,7 +112,7 @@ sub check_required_modules {
 }
 
 sub handle_print_text {
-    my($dest, $text, $stripped) = @_;
+    my ($dest, $text, $stripped) = @_;
     
     # return unless message level PUBLIC
     return unless $dest->{level} & MSGLEVEL_PUBLIC;
@@ -128,10 +128,10 @@ sub handle_print_text {
     # make sure our nick is surrounded by non-nick characters aka. someone really said our nick
     my $found_me = 0;
     my $pos = 0;
-    while( length($stripped) > $pos && ($pos = index($stripped, $me, $pos)) && $pos >= 0 ) {
+    while( length($stripped) > $pos and ($pos = index($stripped, $me, $pos)) and $pos >= 0 ) {
         
         # Check for nick wrapped in non-nick chars a-z, A-Z, 0-9, [, ], \, `, _, ^, {, |, }, -
-        unless( substr($stripped, $pos-1, 1) =~ /[a-zA-Z0-9[\]\\`_^{}|-]/ || substr($stripped, $pos+length($me), 1) =~ m/[a-zA-Z0-9[\]\\`_^{}|-]/ ) {
+        unless( substr($stripped, $pos-1, 1) =~ /[a-zA-Z0-9[\]\\`_^{}|-]/ or substr($stripped, $pos+length($me), 1) =~ m/[a-zA-Z0-9[\]\\`_^{}|-]/ ) {
             $found_me = 1;
             last;
         }
@@ -207,7 +207,7 @@ sub handle_message_private {
 }
 
 sub add_to_buffer {
-    my($key, $val) = @_;
+    my ($key, $val) = @_;
     
     # remove timeout
     Irssi::timeout_remove($timeout) if defined $timeout;
@@ -217,8 +217,8 @@ sub add_to_buffer {
     #   unless our buffer is already too large so we don't run out of RAM.
     # Limits buffer to 100 keys and 1,000 messages per key, or 51.2MB (SI units not MiB).
     # 51.2MB = 512 chars (max in IRC spec) x 1,000 messages x 100 keys
-    return unless exists $buffer{$key} || keys(%buffer) < 100; # check number of keys
-    return unless !exists $buffer{$key} || @{$buffer{$key}} < 1000; # check number messages in this key
+    return unless exists $buffer{$key} or keys(%buffer) < 100; # check number of keys
+    return unless !exists $buffer{$key} or @{$buffer{$key}} < 1000; # check number messages in this key
     $val =~ s/\n\n/\n/g;
     $buffer{$key} = () unless exists $buffer{$key};
     push(@{$buffer{$key}}, $val);
@@ -228,7 +228,7 @@ sub add_to_buffer {
 }
 
 sub check_buffer {
-    my($data, $server) = @_;
+    my ($data, $server) = @_;
     
     Irssi::timeout_remove($timeout) if defined $timeout;
     return unless scalar %buffer;
@@ -258,14 +258,14 @@ sub check_buffer {
 }
 
 sub send_email {
-    my($subject, $body) = @_;
+    my ($subject, $body) = @_;
     my $to       = settings_get_str('awaymail_to');
     my $server   = settings_get_str('awaymail_server');
     my $port     = settings_get_str('awaymail_port');
     my $username = settings_get_str('awaymail_user');
     my $password = settings_get_str('awaymail_pass');
     
-    unless($to && $server && $port =~ /^\d+$/ && $username && $password) {
+    unless($to and $server and $port =~ /^\d+$/ and $username and $password) {
         Irssi::print($help, MSGLEVEL_CLIENTCRAP);
         return;
     }
