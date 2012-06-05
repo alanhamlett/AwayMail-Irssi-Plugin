@@ -1,47 +1,41 @@
-AwayMail-Irssi-Plugin
-====================
-
+## AwayMail-Irssi-Plugin
 Sends email notification(s) when someone types your name or sends you a private msg. Hint: use with screen_away.pl.
 
-Installation
-------------
-
+### Installation
 Put the plugin file in your scripts directory.
 
-    git clone git://github.com/alanhamlett/AwayMail-Irssi-Plugin.git
-    cp AwayMail-Irssi-Plugin/awaymail.pl ~/.irssi/scripts/
-    ln -s ~/.irssi/scripts/awaymail.pl ~/.irssi/scripts/autorun/awaymail.pl
+```
+git clone git://github.com/alanhamlett/AwayMail-Irssi-Plugin.git
+cp AwayMail-Irssi-Plugin/awaymail.pl ~/.irssi/scripts/
+ln -s ~/.irssi/scripts/awaymail.pl ~/.irssi/scripts/autorun/awaymail.pl
+```
 
-Configuration
--------------
-
+### Configuration
 Open irssi and configure the plugin options.
 
-    screen irssi
-    /load awaymail.pl
-    /help awaymail
+```
+screen irssi
+/load awaymail.pl
+/help awaymail
+```
 
-Usage
------
-
+### Usage
 Set yourself away or use the screen_away.pl plugin.
 
-    /away I am away. Hilight or PM me and I will be emailed your message.
+```
+/away I am away. Hilight or PM me and I will be emailed your message.
+```
 
 The next time someone says your nick or sends you a private message, their messages will be emailed to you.
 
-Download
---------
-
+### Download
 <https://github.com/alanhamlett/AwayMail-Irssi-Plugin/tarball/master>
 
-Project Page
-------------
+### Authors and Contributors
+"Alan Hamlett" \<alan.hamlett@gmail.com> @alanhamlett
 
-<https://github.com/alanhamlett/AwayMail-Irssi-Plugin>
+### Project Page
+<http://alanhamlett.github.com/AwayMail-Irssi-Plugin>
 
-License
--------
-
+### License
 Released under the [MIT license](http://opensource.org/licenses/mit-license.php).
-
