@@ -1,4 +1,4 @@
-## AwayMail-Irssi-Plugin
+## AwayMail IRC Plugin for Irssi
 Sends email notification(s) when someone types your name or sends you a private msg. Hint: use with screen_away.pl.
 
 ### Installation
