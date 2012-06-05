@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Awaymail IRC Plugin : send an email notification when someone says your name or sends you a pm on an IRC server" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Awaymail IRC Plugin</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/alanhamlett/AwayMail-Irssi-Plugin">View on GitHub</a>
+
+          <h1 id="project_title">Awaymail IRC Plugin</h1>
+          <h2 id="project_tagline">send an email notification when someone says your name or sends you a pm on an IRC server</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/alanhamlett/AwayMail-Irssi-Plugin/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/alanhamlett/AwayMail-Irssi-Plugin/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>AwayMail-Irssi-Plugin</h2>
+
+<p>Sends email notification(s) when someone types your name or sends you a private msg. Hint: use with screen_away.pl.</p>
+
+<h3>Installation</h3>
+
+<p>Put the plugin file in your scripts directory.</p>
+
+<pre><code>git clone git://github.com/alanhamlett/AwayMail-Irssi-Plugin.git
+cp AwayMail-Irssi-Plugin/awaymail.pl ~/.irssi/scripts/
+ln -s ~/.irssi/scripts/awaymail.pl ~/.irssi/scripts/autorun/awaymail.pl
+</code></pre>
+
+<h3>Configuration</h3>
+
+<p>Open irssi and configure the plugin options.</p>
+
+<pre><code>screen irssi
+/load awaymail.pl
+/help awaymail
+</code></pre>
+
+<h3>Usage</h3>
+
+<p>Set yourself away or use the screen_away.pl plugin.</p>
+
+<pre><code>/away I am away. Hilight or PM me and I will be emailed your message.
+</code></pre>
+
+<p>The next time someone says your nick or sends you a private message, their messages will be emailed to you.</p>
+
+<h3>Download</h3>
+
+<p><a href="https://github.com/alanhamlett/AwayMail-Irssi-Plugin/tarball/master">https://github.com/alanhamlett/AwayMail-Irssi-Plugin/tarball/master</a></p>
+
+<h3>Authors and Contributors</h3>
+
+<p>"Alan Hamlett" &lt;<a href="mailto:alan.hamlett@gmail.com">alan.hamlett@gmail.com</a>&gt; <a href="https://github.com/alanhamlett" class="user-mention">@alanhamlett</a></p>
+
+<h3>Project Page</h3>
+
+<p><a href="http://alanhamlett.github.com/AwayMail-Irssi-Plugin">http://alanhamlett.github.com/AwayMail-Irssi-Plugin</a></p>
+
+<h3>License</h3>
+
+<p>Released under the <a href="http://opensource.org/licenses/mit-license.php">MIT license</a>.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Awaymail IRC Plugin maintained by <a href="https://github.com/alanhamlett">alanhamlett</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
