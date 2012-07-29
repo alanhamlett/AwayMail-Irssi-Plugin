@@ -28,15 +28,15 @@ use Irssi qw(
     settings_set_bool
     settings_set_str
 );
-our $VERSION = '3.02';
+our $VERSION = '3.03';
 our %IRSSI = (
     authors     => 'Alan Hamlett',
     contact     => 'alan.hamlett@gmail.com',
-    url         => 'https://github.com/alanhamlett/AwayMail-Irssi-Plugin',
+    url         => 'https://raw.github.com/alanhamlett/AwayMail-Irssi-Plugin/master/awaymail.pl',
     name        => 'Away Mail',
     description => 'Sends email notification(s) when someone types your name or sends you a private msg. Hint: use with screen_away.pl',
     license     => 'MIT License',
-    changed     => 'Wed Nov 30 14:24:36 PST 2011',
+    changed     => 'Sun Jul 29 00:26:00 PDT 2012',
 );
 
 my $help = "
@@ -44,7 +44,7 @@ AWAYMAIL
  Sends email notification(s) when someone types your name or sends you a private msg. Hint: use with screen_away.pl.
 
 Source Code:
- https://github.com/alanhamlett/AwayMail-Irssi-Plugin
+ http://ahamlett.com/AwayMail-Irssi-Plugin
 
 Usage:
  put this script in your scripts directory ( usually ~/.irssi/scripts/ )
@@ -57,6 +57,7 @@ Usage:
 Required Perl Modules:
  Net::SMTP
  Net::SMTP::SSL ( if awayamail_ssl ON )
+ Net::SMTP::TLS ( if awayamail_tls ON )
  MIME::Base64
  Authen::SASL
 
@@ -68,6 +69,7 @@ Available settings:
  /set awaymail_pass <string>            - Password for the SMTP user. ( Ex: your gmail password )
  /set awaymail_delay <number>           - Limits emails to one per <number> minutes. Default is 1 email per 10 minutes.
  /set awaymail_ssl <ON|OFF>             - Use SSL when connecting to the SMTP server. Default is ON.
+ /set awaymail_tls <ON|OFF>             - Use TLS when connecting to the SMTP server. Default is OFF.
 ";
 
 # buffer of message to be emailed
@@ -100,8 +102,13 @@ sub check_required_modules {
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Install it with CPAN or /SET awaymail_ssl OFF and re-load this script");
             return 0;
         }
-    }
-    else {
+    } elsif ( settings_get_bool('awaymail_tls') ) { # SSL is turned on so check for required modules
+        unless ( eval "use Net::SMTP::TLS; 1" ) {
+            Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Perl module Net::SMTP::TLS must be installed");
+            Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Install it with CPAN or /SET awaymail_tls OFF and re-load this script");
+            return 0;
+        }
+    } else {
         unless ( eval "use Net::SMTP; 1" ) {
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Perl module Net::SMTP must be installed");
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Install it with CPAN and re-load this script");
@@ -247,9 +254,8 @@ sub check_buffer {
     my $subject = scalar(keys %buffer) == 1 ? 'Irssi -- ' . (keys %buffer)[0] : 'Irssi -- Multiple messages';
     my $body;
     foreach my $key (keys %buffer) {
-        $" = "\n";
         my @messages = @{ $buffer{$key} };
-        $body .= "__________________________________________________\n$key\n\n@messages\n\n";
+        $body .= "__________________________________________________\n$key\n\n" . join("\n", @messages) . "\n\n";
     }
     %buffer = ();
     send_email($subject, $body);
@@ -271,21 +277,31 @@ sub send_email {
     }
     
     # connect to smtp server
-    my $smtp = settings_get_bool('awaymail_ssl') ? Net::SMTP::SSL->new($server, Port => $port) : Net::SMTP->new($server, Port => $port);
+    my $smtp;
+    if ( settings_get_bool('awaymail_ssl') ) {
+        $smtp = Net::SMTP::SSL->new($server, Port => $port);
+        $smtp->auth($username, $password);
+    } elsif ( settings_get_bool('awaymail_tls') ) {
+        $smtp = eval { return Net::SMTP::TLS->new($server, Port => $port, User => $username, Password => $password); };
+    } else {
+        $smtp = Net::SMTP->new($server, Port => $port);
+        $smtp->auth($username, $password);
+    }
     unless ( $smtp ) {
         Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Could not connect to SMTP server");
         return;
     }
     
     # send email to smtp server
-    $smtp->auth($username, $password);
-    $smtp->mail($username);
-    $smtp->to($to);
-    $smtp->data();
-    $smtp->datasend("To: $to\r\nFrom: $username\r\nSubject: $subject\r\n\r\n$body\r\n");
-    $smtp->dataend();
-    $smtp->quit();
-    unless ( $smtp->ok() ) {
+    eval {
+        $smtp->mail($username);
+        $smtp->to($to);
+        $smtp->data();
+        $smtp->datasend("To: $to\r\nFrom: $username\r\nSubject: $subject\r\n\r\n$body\r\n");
+        $smtp->dataend();
+        $smtp->quit();
+    };
+    unless ( settings_get_bool('awaymail_tls') ? ( not $@ ) : $smtp->ok() ) {
         Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Failed to send the email");
         return;
     }
@@ -311,6 +327,7 @@ Irssi::settings_add_str('awaymail', 'awaymail_user', "");
 Irssi::settings_add_str('awaymail', 'awaymail_pass', "");
 Irssi::settings_add_str('awaymail', 'awaymail_delay', "10");
 Irssi::settings_add_bool('awaymail', 'awaymail_ssl', 1);
+Irssi::settings_add_bool('awaymail', 'awaymail_tls', 0);
 
 # Register script settings
 Irssi::settings_add_str('awaymail', 'awaymail_last_sent_time', "0");
