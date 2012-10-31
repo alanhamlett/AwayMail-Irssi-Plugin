@@ -82,7 +82,7 @@ my $timeout;
 Irssi::theme_register([
     'awaymail_loaded', '%R>>%n %_AwayMail:%_ Loaded $0 version $1' . "\n" . '%R>>%n %_AwayMail:%_ type /HELP AWAYMAIL for configuration information',
     'awaymail_sent', '%R>>%n %_AwayMail:%_ Sent awaymail',
-    'awaymail_error', '%R>>%n %_AwayMail:%_ $0',
+    'awaymail_error', '%R>>%n %_AwayMail:%_ Error: $0',
 ]);
 
 sub check_required_modules {
@@ -276,38 +276,44 @@ sub send_email {
         return;
     }
     
-    # connect to smtp server
-    my $smtp;
-    if ( settings_get_bool('awaymail_ssl') ) {
-        $smtp = Net::SMTP::SSL->new($server, Port => $port);
-        $smtp->auth($username, $password);
-    } elsif ( settings_get_bool('awaymail_tls') ) {
-        $smtp = eval { return Net::SMTP::TLS->new($server, Port => $port, User => $username, Password => $password); };
-    } else {
-        $smtp = Net::SMTP->new($server, Port => $port);
-        $smtp->auth($username, $password);
-    }
-    unless ( $smtp ) {
-        Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Could not connect to SMTP server");
-        return;
-    }
-    
-    # send email to smtp server
     eval {
+
+        # connect to smtp server
+        my $smtp;
+        if ( settings_get_bool('awaymail_ssl') ) {
+            $smtp = Net::SMTP::SSL->new($server, Port => $port);
+            $smtp->auth($username, $password);
+        } elsif ( settings_get_bool('awaymail_tls') ) {
+            $smtp = eval { return Net::SMTP::TLS->new($server, Port => $port, User => $username, Password => $password); };
+        } else {
+            $smtp = Net::SMTP->new($server, Port => $port);
+            $smtp->auth($username, $password);
+        }
+        if (not defined $smtp) {
+            my $error = 'Could not connect to SMTP server';
+            $error = IO::Socket::SSL::errstr() if settings_get_bool('awaymail_ssl') && IO::Socket::SSL::errstr();
+            die $error;
+        }
+
+        # send email to smtp server
         $smtp->mail($username);
         $smtp->to($to);
         $smtp->data();
         $smtp->datasend("To: $to\r\nFrom: $username\r\nSubject: $subject\r\n\r\n$body\r\n");
         $smtp->dataend();
         $smtp->quit();
+        
+        die IO::Socket::SSL::errstr() if settings_get_bool('awaymail_ssl') && IO::Socket::SSL::errstr();
     };
-    unless ( settings_get_bool('awaymail_tls') ? ( not $@ ) : $smtp->ok() ) {
-        Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Failed to send the email");
+
+    # catch any error exceptions
+    if ($@) {
+        Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', $@);
         return;
     }
 
     # email sent
-    settings_set_str("awaymail_last_sent_time", time);
+    settings_set_str("awaymail_last_sent_time", time());
     Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_sent');
 
     return;
