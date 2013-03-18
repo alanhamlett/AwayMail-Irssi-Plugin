@@ -68,7 +68,8 @@ Available settings:
  /set awaymail_user <string>            - Username for the SMTP server. ( Ex: you\@gmail.com )
  /set awaymail_pass <string>            - Password for the SMTP user. ( Ex: your gmail password )
  /set awaymail_delay <number>           - Limits emails to one per <number> minutes. Default is 1 email per 10 minutes.
- /set awaymail_ssl <ON|OFF>             - Use SSL when connecting to the SMTP server. Default is ON.
+ /set awaymail_ssl <ON|OFF>             - Use SSL when connecting to the SMTP server. Default is OFF.
+ /set awaymail_no_auth <ON|OFF>         - Does not auth on SMTP server. Default is ON.
  /set awaymail_tls <ON|OFF>             - Use TLS when connecting to the SMTP server. Default is OFF.
 ";
 
@@ -270,17 +271,19 @@ sub send_email {
     my $port     = settings_get_str('awaymail_port');
     my $username = settings_get_str('awaymail_user');
     my $password = settings_get_str('awaymail_pass');
-    
-    unless ( $to and $server and $port =~ /^\d+$/ and $username and $password ) {
+
+    unless ( $to and $server and $port =~ /^\d+$/ and $username ) {
         Irssi::print($help, MSGLEVEL_CLIENTCRAP);
         return;
     }
-    
+
     eval {
 
         # connect to smtp server
         my $smtp;
-        if ( settings_get_bool('awaymail_ssl') ) {
+        if ( settings_get_bool('awaymail_no_auth') ) {
+            $smtp = Net::SMTP->new($server, Port => $port);
+        } elsif ( settings_get_bool('awaymail_ssl') ) {
             $smtp = Net::SMTP::SSL->new($server, Port => $port);
             $smtp->auth($username, $password);
         } elsif ( settings_get_bool('awaymail_tls') ) {
@@ -290,6 +293,7 @@ sub send_email {
             $smtp->auth($username, $password);
         }
         if (not defined $smtp) {
+            Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Could not connect to SMTP");
             my $error = 'Could not connect to SMTP server';
             $error = IO::Socket::SSL::errstr() if settings_get_bool('awaymail_ssl') && IO::Socket::SSL::errstr();
             die $error;
@@ -327,12 +331,13 @@ sub reset_time {
 
 # Register user settings
 Irssi::settings_add_str('awaymail', 'awaymail_to', "");
-Irssi::settings_add_str('awaymail', 'awaymail_server', "smtp.gmail.com");
-Irssi::settings_add_str('awaymail', 'awaymail_port', "465");
+Irssi::settings_add_str('awaymail', 'awaymail_server', "localhost");
+Irssi::settings_add_str('awaymail', 'awaymail_port', "25");
 Irssi::settings_add_str('awaymail', 'awaymail_user', "");
 Irssi::settings_add_str('awaymail', 'awaymail_pass', "");
 Irssi::settings_add_str('awaymail', 'awaymail_delay', "10");
-Irssi::settings_add_bool('awaymail', 'awaymail_ssl', 1);
+Irssi::settings_add_bool('awaymail', 'awaymail_ssl', 0);
+Irssi::settings_add_bool('awaymail', 'awaymail_no_auth', 1);
 Irssi::settings_add_bool('awaymail', 'awaymail_tls', 0);
 
 # Register script settings
