@@ -57,7 +57,7 @@ Usage:
 Required Perl Modules:
  Net::SMTP
  Net::SMTP::SSL ( if awayamail_ssl ON )
- Net::SMTP::TLS ( if awayamail_tls ON )
+ Net::SMTP::TLS::ButMaintained ( if awayamail_tls ON )
  MIME::Base64
  Authen::SASL
 
@@ -103,8 +103,8 @@ sub check_required_modules {
             return 0;
         }
     } elsif ( settings_get_bool('awaymail_tls') ) { # SSL is turned on so check for required modules
-        unless ( eval "use Net::SMTP::TLS; 1" ) {
-            Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Perl module Net::SMTP::TLS must be installed");
+        unless ( eval "use Net::SMTP::TLS::ButMaintained; 1" ) {
+            Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Perl module Net::SMTP::TLS::ButMaintained must be installed");
             Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_error', "Install it with CPAN or /SET awaymail_tls OFF and re-load this script");
             return 0;
         }
@@ -284,7 +284,7 @@ sub send_email {
             $smtp = Net::SMTP::SSL->new($server, Port => $port);
             $smtp->auth($username, $password);
         } elsif ( settings_get_bool('awaymail_tls') ) {
-            $smtp = eval { return Net::SMTP::TLS->new($server, Port => $port, User => $username, Password => $password); };
+            $smtp = eval { return Net::SMTP::TLS::ButMaintained->new($server, Port => $port, User => $username, Password => $password); };
         } else {
             $smtp = Net::SMTP->new($server, Port => $port);
             $smtp->auth($username, $password) if $password;
