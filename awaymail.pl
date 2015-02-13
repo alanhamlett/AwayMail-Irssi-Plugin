@@ -271,7 +271,7 @@ sub send_email {
     my $username = settings_get_str('awaymail_user');
     my $password = settings_get_str('awaymail_pass');
 
-    unless ( $to and $server and $port =~ /^\d+$/ and $username ) {
+    unless ( $to and $server and $port =~ /^\d+$/ ) {
         Irssi::print($help, MSGLEVEL_CLIENTCRAP);
         return;
     }
@@ -282,7 +282,7 @@ sub send_email {
         my $smtp;
         if ( settings_get_bool('awaymail_ssl') ) {
             $smtp = Net::SMTP::SSL->new($server, Port => $port);
-            $smtp->auth($username, $password);
+            $smtp->auth($username, $password) if $password;
         } elsif ( settings_get_bool('awaymail_tls') ) {
             $smtp = eval { return Net::SMTP::TLS::ButMaintained->new($server, Port => $port, User => $username, Password => $password); };
         } else {
@@ -319,7 +319,7 @@ sub send_email {
     return;
 }
 
-sub reset_time {
+sub reset_buffer_and_time {
     %buffer = ();
     settings_set_str('awaymail_last_sent_time', "0");
     return;
@@ -343,7 +343,7 @@ return 1 unless check_required_modules();
 # Register signal handlers
 Irssi::signal_add_last('print text', 'handle_print_text');
 Irssi::signal_add_last('message private', 'handle_message_private');
-Irssi::signal_add_last('away mode changed', 'reset_time');
+Irssi::signal_add_last('away mode changed', 'reset_buffer_and_time');
 
 # Overwrite the help command for awaymail
 Irssi::command_bind('help', sub {
