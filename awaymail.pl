@@ -271,7 +271,7 @@ sub send_email {
     my $username = settings_get_str('awaymail_user');
     my $password = settings_get_str('awaymail_pass');
 
-    unless ( $to and $server and $port =~ /^\d+$/ and $username ) {
+    unless ( $to and $server and $port =~ /^\d+$/ ) {
         Irssi::print($help, MSGLEVEL_CLIENTCRAP);
         return;
     }
@@ -282,7 +282,7 @@ sub send_email {
         my $smtp;
         if ( settings_get_bool('awaymail_ssl') ) {
             $smtp = Net::SMTP::SSL->new($server, Port => $port);
-            $smtp->auth($username, $password);
+            $smtp->auth($username, $password) if $password;
         } elsif ( settings_get_bool('awaymail_tls') ) {
             $smtp = eval { return Net::SMTP::TLS::ButMaintained->new($server, Port => $port, User => $username, Password => $password); };
         } else {
