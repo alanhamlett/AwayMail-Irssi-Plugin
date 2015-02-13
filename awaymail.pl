@@ -319,7 +319,7 @@ sub send_email {
     return;
 }
 
-sub reset_time {
+sub reset_buffer_and_time {
     %buffer = ();
     settings_set_str('awaymail_last_sent_time', "0");
     return;
@@ -343,7 +343,7 @@ return 1 unless check_required_modules();
 # Register signal handlers
 Irssi::signal_add_last('print text', 'handle_print_text');
 Irssi::signal_add_last('message private', 'handle_message_private');
-Irssi::signal_add_last('away mode changed', 'reset_time');
+Irssi::signal_add_last('away mode changed', 'reset_buffer_and_time');
 
 # Overwrite the help command for awaymail
 Irssi::command_bind('help', sub {
