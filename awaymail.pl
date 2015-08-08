@@ -281,8 +281,8 @@ sub send_email {
         # connect to smtp server
         my $smtp;
         if ( settings_get_bool('awaymail_ssl') ) {
-            $smtp = Net::SMTP::SSL->new($server, Port => $port);
-            $smtp->auth($username, $password);
+            $smtp = Net::SMTP::SSL->new($server, Port => $port, DEBUG => 1,) or Irssi::print($!, MSGLEVEL_CLIENTCRAP);
+            defined ($smtp->auth($username, $password)) or die "Can't authenticate: $!";
         } elsif ( settings_get_bool('awaymail_tls') ) {
             $smtp = eval { return Net::SMTP::TLS::ButMaintained->new($server, Port => $port, User => $username, Password => $password); };
         } else {
