@@ -120,23 +120,23 @@ sub check_required_modules {
 
 sub handle_print_text {
     my ($dest, $text, $stripped) = @_;
-    
+
     # return unless message level PUBLIC
     return unless $dest->{level} & MSGLEVEL_PUBLIC;
-    
+
     # return if this text doesn't trigger channel activity
     return if $dest->{level} & MSGLEVEL_NO_ACT;
-    
+
     # return unless we are away
     return unless $dest->{server}->{usermode_away};
-    
+
     my $me = $dest->{server}->{nick};
 
     # make sure our nick is surrounded by non-nick characters aka. someone really said our nick
     my $found_me = 0;
     my $pos = 0;
     while ( length($stripped) > $pos and ($pos = index($stripped, $me, $pos)) and $pos >= 0 ) {
-        
+
         # Check for nick wrapped in non-nick chars a-z, A-Z, 0-9, [, ], \, `, _, ^, {, |, }, -
         unless( substr($stripped, $pos-1, 1) =~ /[a-zA-Z0-9[\]\\`_^{}|-]/ or substr($stripped, $pos+length($me), 1) =~ m/[a-zA-Z0-9[\]\\`_^{}|-]/ ) {
             $found_me = 1;
@@ -147,7 +147,7 @@ sub handle_print_text {
 
     # return unless we found our nick in the message
     return unless $found_me;
-    
+
     $stripped =~ /<\s*([^>]+)\s*>/;
     my $nick = $1;
     my $serv = $dest->{server}->{address};
@@ -177,7 +177,7 @@ sub handle_print_text {
     my $key = "$nick said your name in $serv $chan";
     my $val = $stripped . $footer;
     add_to_buffer($key, $val);
-    
+
     return;
 }
 
@@ -186,7 +186,7 @@ sub handle_message_private {
 
     # return unless we are away
     return unless $server->{usermode_away};
-    
+
     my $serv = $server->{address};
 
     # encode as utf8 if string is decoded utf8
@@ -209,16 +209,16 @@ sub handle_message_private {
     my $key = "$nick sent you a pm in server $serv";
     my $val = $msg . $footer;
     add_to_buffer($key, $val);
-    
+
     return;
 }
 
 sub add_to_buffer {
     my ($key, $val) = @_;
-    
+
     # remove timeout
     Irssi::timeout_remove($timeout) if defined $timeout;
-    
+
     # Add message to buffer and set timeout to send email after 30 seconds
     #   to see if we can combine multiple messages in one email
     #   unless our buffer is already too large so we don't run out of RAM.
@@ -230,13 +230,13 @@ sub add_to_buffer {
     $buffer{$key} = () unless exists $buffer{$key};
     push(@{$buffer{$key}}, $val);
     $timeout = Irssi::timeout_add(30*1000, 'check_buffer', '');
-    
+
     return;
 }
 
 sub check_buffer {
     my ($data, $server) = @_;
-    
+
     Irssi::timeout_remove($timeout) if defined $timeout;
     return unless scalar %buffer;
 
@@ -302,7 +302,7 @@ sub send_email {
         $smtp->datasend("To: $to\r\nFrom: $username\r\nSubject: $subject\r\n\r\n$body\r\n");
         $smtp->dataend();
         $smtp->quit();
-        
+
         die IO::Socket::SSL::errstr() if settings_get_bool('awaymail_ssl') && IO::Socket::SSL::errstr();
     };
 
