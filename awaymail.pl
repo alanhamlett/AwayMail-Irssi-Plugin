@@ -70,6 +70,9 @@ Available settings:
  /set awaymail_delay <number>           - Limits emails to one per <number> minutes. Default is 1 email per 10 minutes.
  /set awaymail_ssl <ON|OFF>             - Use SSL when connecting to the SMTP server. Default is OFF.
  /set awaymail_tls <ON|OFF>             - Use TLS when connecting to the SMTP server. Default is OFF.
+
+Available commands:
+ /awaymail_test_send                    - Sends a test email to check your awaymail settings.
 ";
 
 # buffer of message to be emailed
@@ -82,6 +85,7 @@ my $timeout;
 Irssi::theme_register([
     'awaymail_loaded', '%R>>%n %_AwayMail:%_ Loaded $0 version $1' . "\n" . '%R>>%n %_AwayMail:%_ type /HELP AWAYMAIL for configuration information',
     'awaymail_sent', '%R>>%n %_AwayMail:%_ Sent awaymail',
+    'awaymail_test_sent', '%R>>%n %_AwayMail:%_ Sent awaymail test email',
     'awaymail_error', '%R>>%n %_AwayMail:%_ Error: $0',
 ]);
 
@@ -339,6 +343,17 @@ Irssi::settings_add_bool('awaymail', 'awaymail_tls', 0);
 Irssi::settings_add_str('awaymail', 'awaymail_last_sent_time', "0");
 
 return 1 unless check_required_modules();
+
+# Register script commands
+Irssi::command_bind('awaymail_test_send', sub {
+    my ($argument_string, $server_obj, $window_item_obj) = @_;
+
+    my $subject = 'AwayMail Irssi Test';
+    my $body = 'This is a test of your awaymail configuration.';
+    send_email($subject, $body);
+    Irssi::printformat(MSGLEVEL_CLIENTCRAP, 'awaymail_test_sent');
+
+}, 'AwayMail');
 
 # Register signal handlers
 Irssi::signal_add_last('print text', 'handle_print_text');
