@@ -23,7 +23,7 @@ screen irssi
 Set yourself away or use the screen_away.pl plugin.
 
 ```
-/away I am away. Hilight or PM me and I will be emailed your message.
+/away I am away. Highlight or PM me and I will be emailed with your message.
 ```
 
 The next time someone says your nick or sends you a private message, their messages will be emailed to you.
