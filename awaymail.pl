@@ -65,6 +65,7 @@ Available settings:
  /set awaymail_to <string>              - Email address where notifications are sent. ( Ex: you\@gmail.com )
  /set awaymail_server <string>          - SMTP server address. Default is smtp.gmail.com.
  /set awaymail_port <number>            - SMTP server port number. Default is 465.
+ /set awaymail_from <string>            - From e-mail address if different from awaymail_user. ( Ex: you\@gmail.com )
  /set awaymail_user <string>            - Username for the SMTP server. ( Ex: you\@gmail.com )
  /set awaymail_pass <string>            - Optional password for the SMTP user. ( Ex: your gmail password )
  /set awaymail_delay <number>           - Limits emails to one per <number> minutes. Default is 1 email per 10 minutes.
@@ -270,6 +271,7 @@ sub check_buffer {
 sub send_email {
     my ($subject, $body) = @_;
     my $to       = settings_get_str('awaymail_to');
+    my $from     = settings_get_str('awaymail_from') or settings_get_str('awaymail_user');
     my $server   = settings_get_str('awaymail_server');
     my $port     = settings_get_str('awaymail_port');
     my $username = settings_get_str('awaymail_user');
@@ -300,10 +302,10 @@ sub send_email {
         }
 
         # send email to smtp server
-        $smtp->mail($username);
+        $smtp->mail($from);
         $smtp->to($to);
         $smtp->data();
-        $smtp->datasend("To: $to\r\nFrom: $username\r\nSubject: $subject\r\n\r\n$body\r\n");
+        $smtp->datasend("To: $to\r\nFrom: $from\r\nSubject: $subject\r\n\r\n$body\r\n");
         $smtp->dataend();
         $smtp->quit();
 
@@ -333,6 +335,7 @@ sub reset_time {
 Irssi::settings_add_str('awaymail', 'awaymail_to', "");
 Irssi::settings_add_str('awaymail', 'awaymail_server', "localhost");
 Irssi::settings_add_str('awaymail', 'awaymail_port', "25");
+Irssi::settings_add_str('awaymail', 'awaymail_from', "");
 Irssi::settings_add_str('awaymail', 'awaymail_user', "");
 Irssi::settings_add_str('awaymail', 'awaymail_pass', "");
 Irssi::settings_add_str('awaymail', 'awaymail_delay', "10");
